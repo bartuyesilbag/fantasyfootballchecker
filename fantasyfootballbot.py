@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 from unidecode import unidecode
 from telegram.ext import *
 
-API_KEY = '5079923137:AAHLr_7S6QhCB8-gJGedwOd0JLF1alma2Cg'
+API_KEY = 'Your Telegram API_KEY'
 
 
 global suspendedPlayers
