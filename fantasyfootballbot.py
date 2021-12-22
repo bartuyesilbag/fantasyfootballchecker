@@ -16,10 +16,10 @@ injuredPlayers = dict()
 
 
 def startCommand(update, context):
-    update.message.reply_text(text= f"*Merhaba {update.effective_user.first_name}, sakat , cezali veya cleansheet yazarak baslayabilirsin...*", parse_mode= 'Markdown')
+    update.message.reply_text(text= f"*Hi {update.effective_user.first_name}, you can start by typing injured , suspended or cleansheet!*", parse_mode= 'Markdown')
 
 def helpCommand(update, context):
-    update.message.reply_text('sakat , cezali veya cleansheet yazarak baslayabilirsin...', parse_mode= 'Markdown')
+    update.message.reply_text('*:You can start by typing injured , suspended or cleansheet!*', parse_mode= 'Markdown')
 
 def handleMessage(update, context):
     text = str(update.message.text).lower()
@@ -37,9 +37,9 @@ def error(update, context):
 def responses(inputText):
     userMessage = str(inputText).lower()
     
-    if userMessage in ('sakat', 'sakatlar'):
+    if userMessage in ('injured'):
         getInjuredPlayersInfo()
-        ret = "*Sakat Oyuncular:\n*\n"
+        ret = "*Injured Players:\n*\n"
         for team in injuredPlayers:
             ret += f"*\n{team}:* \n"
             for player in injuredPlayers[team]:
@@ -47,9 +47,9 @@ def responses(inputText):
         return ret
         #return json.dumps(injuredPlayers, indent=4, ensure_ascii=False, sort_keys=True)
     
-    if userMessage in ('cezali', 'ceza'):
+    if userMessage in ('suspended'):
         getSuspendedPlayersInfo()
-        ret = "*Cezalı Oyuncular:\n*\n"
+        ret = "*Suspended Players:\n*\n"
         for team in suspendedPlayers:
             ret += f"*\n{team}:* \n"
             for player in suspendedPlayers[team]:
@@ -57,16 +57,16 @@ def responses(inputText):
         return ret
         #eturn json.dumps(suspendedPlayers, indent=4, ensure_ascii=False, sort_keys=True)
     
-    if userMessage in ('kaleci', 'clean sheet', 'cleansheet', 'clean'):
+    if userMessage in ('goalkeeper', 'clean sheet', 'cleansheet', 'clean'):
         cleanSheetPlayers = getCleanSheetPlayers()
-        ret = "*Kalecilerin Clean Sheet Sayıları:\n*\n"
+        ret = "*Cleansheet match number of goalkeepers::\n*\n"
         for player in cleanSheetPlayers:
             ret += f"{player}{cleanSheetPlayers[player]} mac\n"
 
         return ret
     
 
-    return "Anlamadim..."
+    return "Sorry I do not understand..."
 
 def getList(soup, playerDict):
     odds = soup.find_all('tr', attrs={ 'class' : 'odd'})
@@ -108,18 +108,19 @@ def getCleanSheetPlayerStats(soup):
     return dict(sorted(cleanSheetDict.items(), key=lambda item: item[1], reverse = True))
 
 def getCleanSheetPlayers():
-    super_league = 'https://www.transfermarkt.com/super-lig/weisseweste/wettbewerb/TR1'
+    premiere_league = 'https://www.transfermarkt.com/premier-league/weisseweste/wettbewerb/GB1'
+    #super_league = 'https://www.transfermarkt.com/super-lig/weisseweste/wettbewerb/TR1'
     headers = {"User-Agent":"Mozilla/5.0"}
-    response = requests.get(super_league, headers=headers)
+    response = requests.get(premiere_league, headers=headers)
     soup = BeautifulSoup(response.text, 'html.parser')
     
     return getCleanSheetPlayerStats(soup)
 
 def getSuspendedPlayersInfo():
     premiere_league = 'https://www.transfermarkt.com.tr/premier-league/verletztespieler/wettbewerb/GB1'
-    super_league = 'https://www.transfermarkt.com/super-lig/sperrenausfaelle/wettbewerb/TR1'
+    #super_league = 'https://www.transfermarkt.com/super-lig/sperrenausfaelle/wettbewerb/TR1'
     headers = {"User-Agent":"Mozilla/5.0"}
-    response = requests.get(super_league, headers=headers)
+    response = requests.get(premiere_league, headers=headers)
     soup = BeautifulSoup(response.text, 'html.parser')
 
     getList(soup, suspendedPlayers)    
@@ -133,9 +134,9 @@ def getSuspendedPlayersInfo():
 
 def getInjuredPlayersInfo():
     premiere_league = 'https://www.transfermarkt.com.tr/premier-league/verletztespieler/wettbewerb/GB1'
-    super_league = 'http://www.transfermarkt.com.tr/super-lig/verletztespieler/wettbewerb/TR1'
+    #super_league = 'http://www.transfermarkt.com.tr/super-lig/verletztespieler/wettbewerb/TR1'
     headers = {"User-Agent":"Mozilla/5.0"}
-    response = requests.get(super_league, headers=headers)
+    response = requests.get(premiere_league, headers=headers)
     soup = BeautifulSoup(response.text, 'html.parser')
 
     getList(soup, injuredPlayers)
