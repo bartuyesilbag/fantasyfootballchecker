@@ -3,9 +3,52 @@ import json
 import requests
 from bs4 import BeautifulSoup
 from unidecode import unidecode
+from telegram.ext import *
 
-global suspendedAndInjuredPlayers
-suspendedAndInjuredPlayers = dict()
+API_KEY = '5079923137:AAHLr_7S6QhCB8-gJGedwOd0JLF1alma2Cg'
+
+
+global suspendedPlayers
+suspendedPlayers = dict()
+
+global injuredPlayers
+injuredPlayers = dict()
+
+
+def startCommand(update, context):
+    update.message.reply_text('sakat , cezali veya cleansheet yazarak baslayabilirsin...')
+
+def helpCommand(update, context):
+    update.message.reply_text('sakat , cezali veya cleansheet yazarak baslayabilirsin...')
+
+def handleMessage(update, context):
+    text = str(update.message.text).lower()
+    response = responses(text)
+
+    update.message.reply_text(response)
+
+
+def error(update, context):
+    print(f"Update {update} caused error {context.error}")
+
+
+
+
+def responses(inputText):
+    userMessage = str(inputText).lower()
+    
+    if userMessage in ('sakat', 'sakatlar'):
+        getInjuredPlayersInfo()
+        return json.dumps(injuredPlayers, indent=4, ensure_ascii=False, sort_keys=True)
+    
+    if userMessage in ('cezali', 'ceza'):
+        getSuspendedPlayersInfo()
+        return json.dumps(suspendedPlayers, indent=4, ensure_ascii=False, sort_keys=True)
+    
+    if userMessage in ('clean sheet', 'cleansheet', 'clean'):
+        return getCleanSheetPlayers()
+
+    return "Anlamadim..."
 
 def getList(soup, playerDict):
     odds = soup.find_all('tr', attrs={ 'class' : 'odd'})
@@ -61,13 +104,13 @@ def getSuspendedPlayersInfo():
     response = requests.get(super_league, headers=headers)
     soup = BeautifulSoup(response.text, 'html.parser')
 
-    getList(soup, suspendedAndInjuredPlayers)    
+    getList(soup, suspendedPlayers)    
     
     if soup.find('div', attrs={ 'class' : 'pager'}):
         second_page = "https://www.transfermarkt.com/super-lig/sperrenausfaelle/wettbewerb/TR1/page/2"
         response = requests.get(second_page, headers=headers)
         soup = BeautifulSoup(response.text, 'html.parser')
-        getList(soup.find('table', attrs={ 'class' : 'items'}), suspendedAndInjuredPlayers)
+        getList(soup.find('table', attrs={ 'class' : 'items'}), suspendedPlayers)
     return True
 
 def getInjuredPlayersInfo():
@@ -77,18 +120,27 @@ def getInjuredPlayersInfo():
     response = requests.get(super_league, headers=headers)
     soup = BeautifulSoup(response.text, 'html.parser')
 
-    getList(soup, suspendedAndInjuredPlayers)
+    getList(soup, injuredPlayers)
     
     return True
 
 def main():
-    getInjuredPlayersInfo()
-    getSuspendedPlayersInfo()
-    cleanSheetPlayers = getCleanSheetPlayers()
+    
+    print("Bot Started...")
+    
+    updater = Updater(API_KEY, use_context=True)
+    dp = updater.dispatcher
 
-    suspendedPlayersJSON = json.dumps(suspendedAndInjuredPlayers, indent=4, ensure_ascii=False, sort_keys=True)
-    cleanSheetPlayersJSON = json.dumps(cleanSheetPlayers, indent=4, ensure_ascii=False)
-    print(cleanSheetPlayersJSON)
+    dp.add_handler(CommandHandler("start", startCommand))
+    dp.add_handler(CommandHandler("help", helpCommand))
+
+    dp.add_handler(MessageHandler(Filters.text, handleMessage))
+
+    dp.add_error_handler(error)
+
+    updater.start_polling()
+
+
 
 
 
