@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 from unidecode import unidecode
 from telegram.ext import *
 
-API_KEY = 'Your Telegram API_KEY'
+API_KEY = ''
 
 
 global suspendedPlayers
@@ -16,16 +16,16 @@ injuredPlayers = dict()
 
 
 def startCommand(update, context):
-    update.message.reply_text('sakat , cezali veya cleansheet yazarak baslayabilirsin...')
+    update.message.reply_text(text= f"*Merhaba {update.effective_user.first_name}, sakat , cezali veya cleansheet yazarak baslayabilirsin...*", parse_mode= 'Markdown')
 
 def helpCommand(update, context):
-    update.message.reply_text('sakat , cezali veya cleansheet yazarak baslayabilirsin...')
+    update.message.reply_text('sakat , cezali veya cleansheet yazarak baslayabilirsin...', parse_mode= 'Markdown')
 
 def handleMessage(update, context):
     text = str(update.message.text).lower()
     response = responses(text)
 
-    update.message.reply_text(response)
+    update.message.reply_text(response, parse_mode= 'Markdown')
 
 
 def error(update, context):
@@ -39,14 +39,32 @@ def responses(inputText):
     
     if userMessage in ('sakat', 'sakatlar'):
         getInjuredPlayersInfo()
-        return json.dumps(injuredPlayers, indent=4, ensure_ascii=False, sort_keys=True)
+        ret = "*Sakat Oyuncular:\n*\n"
+        for team in injuredPlayers:
+            ret += f"*\n{team}:* \n"
+            for player in injuredPlayers[team]:
+                ret += f"{player}\n"
+        return ret
+        #return json.dumps(injuredPlayers, indent=4, ensure_ascii=False, sort_keys=True)
     
     if userMessage in ('cezali', 'ceza'):
         getSuspendedPlayersInfo()
-        return json.dumps(suspendedPlayers, indent=4, ensure_ascii=False, sort_keys=True)
+        ret = "*Cezalı Oyuncular:\n*\n"
+        for team in suspendedPlayers:
+            ret += f"*\n{team}:* \n"
+            for player in suspendedPlayers[team]:
+                ret += f"{player}\n"
+        return ret
+        #eturn json.dumps(suspendedPlayers, indent=4, ensure_ascii=False, sort_keys=True)
     
-    if userMessage in ('clean sheet', 'cleansheet', 'clean'):
-        return getCleanSheetPlayers()
+    if userMessage in ('kaleci', 'clean sheet', 'cleansheet', 'clean'):
+        cleanSheetPlayers = getCleanSheetPlayers()
+        ret = "*Kalecilerin Clean Sheet Sayıları:\n*\n"
+        for player in cleanSheetPlayers:
+            ret += f"{player}{cleanSheetPlayers[player]} mac\n"
+
+        return ret
+    
 
     return "Anlamadim..."
 
@@ -125,7 +143,6 @@ def getInjuredPlayersInfo():
     return True
 
 def main():
-    
     print("Bot Started...")
     
     updater = Updater(API_KEY, use_context=True)
