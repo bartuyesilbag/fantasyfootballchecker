@@ -44,6 +44,8 @@ def responses(inputText):
             ret += f"*\n{team}:* \n"
             for player in injuredPlayers[team]:
                 ret += f"{player}\n"
+                
+        injuredPlayers.clear()
         return ret
         #return json.dumps(injuredPlayers, indent=4, ensure_ascii=False, sort_keys=True)
     
@@ -54,6 +56,8 @@ def responses(inputText):
             ret += f"*\n{team}:* \n"
             for player in suspendedPlayers[team]:
                 ret += f"{player}\n"
+                
+        suspendedPlayers.clear()
         return ret
         #eturn json.dumps(suspendedPlayers, indent=4, ensure_ascii=False, sort_keys=True)
     
